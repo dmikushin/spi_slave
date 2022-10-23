@@ -24,7 +24,7 @@
 
 from spislave.pinaccess import PinAccess
 
-import sys, Queue
+import sys, queue
 
 try:
     import RPi.GPIO as GPIO
@@ -55,7 +55,7 @@ class RPiGPIOAccess(PinAccess):
     def __init__(self):
         self.sckCallback = None
         self.ssCallback = None
-        self.exceptionQueue = Queue.Queue()
+        self.exceptionQueue = queue.Queue()
         GPIO.add_event_detect(PIN_SCK, GPIO.BOTH, callback=self.clock_tick)
         GPIO.add_event_detect(PIN_SS, GPIO.BOTH, callback=self.slave_tick)
         self.enabled = False

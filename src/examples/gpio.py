@@ -36,18 +36,18 @@
 
 
 if __name__ != '__main__':
-    print "Not in main - exiting"
+    print("Not in main - exiting")
     exit(1);
 
 
 try:
     import RPi.GPIO as GPIO
 except ImportError:
-    print "Error: RPi.GPIO module not installed, try 'sudo aptitude install python-rpi.gpio' or 'sudo aptitude install python3-rpi.gpio'\n"
+    print("Error: RPi.GPIO module not installed, try 'sudo aptitude install python-rpi.gpio' or 'sudo aptitude install python3-rpi.gpio'\n")
     raise
 
 import sys, traceback
-import Queue
+import queue
 
 
 PIN_SCK=11      ## SCLK-GPIO11 (pin23)
@@ -56,7 +56,7 @@ PIN_DO=10       ## M0SI-GPIO10 (pin19)
 PIN_SS=22       ## GPIO12      (pin15)
 
 
-exceptionQueue = Queue.Queue()
+exceptionQueue = queue.Queue()
 
 
 
@@ -91,18 +91,18 @@ class SpiSlave(object):
             if self.receiveBuffer == 0b10101010:
                 ## send echo message
                 self.sendBuffer = self.counter
-                print "echo command -- sending echo request: {0:#010b}".format(self.sendBuffer)
+                print("echo command -- sending echo request: {0:#010b}".format(self.sendBuffer))
                 self.state = SlaveState.SENDING_VALUE
                 self.slaveSelected()
         
         elif self.state == SlaveState.SENDING_VALUE:
             ## sending done -- received trash
-            print "sending completed -- receiving echo"
+            print("sending completed -- receiving echo")
             self.state = SlaveState.RECEIVING_ECHO
             
         elif self.state == SlaveState.RECEIVING_ECHO:
             ## echo received
-            print "echo received: {0:#010b}".format(self.receiveBuffer)
+            print("echo received: {0:#010b}".format(self.receiveBuffer))
             self.state = SlaveState.IDLE
             self.counter += 1
 
@@ -171,7 +171,7 @@ class SpiSlave(object):
             self.edgeCunter = 0
             self.receiveBuffer = 0
         else:
-            print "unknown state: {0:#010b}".format(self.receiveBuffer)
+            print("unknown state: {0:#010b}".format(self.receiveBuffer))
 
 
     def slaveSelected(self):
@@ -216,15 +216,15 @@ try:
         try:
             ##exc = exceptionQueue.get(block=False)
             exc = exceptionQueue.get(timeout=1000)
-        except Queue.Empty:
+        except queue.Empty:
             ## timeout
             pass
         else:
             #### deal with the exception
             exc_type, exc_obj, exc_trace = exc
-            print "\nTraceback (most recent call last):"
+            print("\nTraceback (most recent call last):")
             traceback.print_tb(exc_trace)
-            print "{}: {}".format(exc_type.__name__, exc_obj )
+            print("{}: {}".format(exc_type.__name__, exc_obj ))
             exit(1)
             
         
@@ -233,6 +233,6 @@ except KeyboardInterrupt:
     pass
 
 finally:
-    print "Cleaning up"
+    print("Cleaning up")
     GPIO.cleanup()
 

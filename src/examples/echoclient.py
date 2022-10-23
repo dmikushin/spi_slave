@@ -29,7 +29,7 @@ from spislave.protocol import SSProtocol
 from spislave.protocol import NoSSProtocol
 from spislave.rpigpioaccess import RPiGPIOAccess
 
-import Queue
+import queue
 import traceback
 
 
@@ -47,10 +47,10 @@ class EchoSlaveNoSS(SpiDevice):
 
     def prepareData(self):
         ##self.sendBuffer = 55
-        print "echo prepareData: {0}[{0:#010b}]".format(self.sendBuffer)
+        print("echo prepareData: {0}[{0:#010b}]".format(self.sendBuffer))
 
     def dataReceived(self):
-        print "echo received: {0}[{0:#010b}]".format(self.receiveBuffer)
+        print("echo received: {0}[{0:#010b}]".format(self.receiveBuffer))
         if self.receiveBuffer == 170:
             self.sendBuffer = 55
         else:
@@ -63,15 +63,15 @@ class EchoSlaveNoSS(SpiDevice):
             try:
                 ##exc = bucket.get(block=False)
                 exc = self.dataAccess.getException(1000)
-            except Queue.Empty:
+            except queue.Empty:
                 ## timeout
                 pass
             else:
                 #### deal with the exception
                 exc_type, exc_obj, exc_trace = exc
-                print "\nTraceback (most recent call last):"
+                print("\nTraceback (most recent call last):")
                 traceback.print_tb(exc_trace)
-                print "{}: {}".format(exc_type.__name__, exc_obj )
+                print("{}: {}".format(exc_type.__name__, exc_obj ))
                 exit(1)
 
 
@@ -89,10 +89,10 @@ class EchoSlave(SpiDevice):
     def prepareData(self):
         self.counter += 1
         self.sendBuffer = self.counter
-        print "echo prepareData: {0}[{0:#010b}]".format(self.sendBuffer)
+        print("echo prepareData: {0}[{0:#010b}]".format(self.sendBuffer))
 
     def dataReceived(self):
-        print "echo received: {0}[{0:#010b}]".format(self.receiveBuffer)
+        print("echo received: {0}[{0:#010b}]".format(self.receiveBuffer))
 
     def run(self):
         self.dataAccess.start()
@@ -101,15 +101,15 @@ class EchoSlave(SpiDevice):
             try:
                 ##exc = bucket.get(block=False)
                 exc = self.dataAccess.getException(1000)
-            except Queue.Empty:
+            except queue.Empty:
                 ## timeout
                 pass
             else:
                 #### deal with the exception
                 exc_type, exc_obj, exc_trace = exc
-                print "\nTraceback (most recent call last):"
+                print("\nTraceback (most recent call last):")
                 traceback.print_tb(exc_trace)
-                print "{}: {}".format(exc_type.__name__, exc_obj )
+                print("{}: {}".format(exc_type.__name__, exc_obj ))
                 exit(1)
 
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     try:
-        print "Waiting for master"
+        print("Waiting for master")
         
         echo = None
         if args.noss:
@@ -136,6 +136,6 @@ if __name__ == "__main__":
         pass
 
     finally:
-        print "Cleaning up"
+        print("Cleaning up")
         RPiGPIOAccess.cleanup()
 
