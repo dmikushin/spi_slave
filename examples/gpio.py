@@ -1,19 +1,19 @@
 #!/usr/bin/python
 #
 # MIT License
-# 
+#
 # Copyright (c) 2017 Arkadiusz Netczuk <dev.arnet@gmail.com>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,7 +24,7 @@
 #
 
 
-## 
+##
 ## Pinout ATtiny85 -> RPi:
 ##      SCK (pin7)    -> SCLK-GPIO11 (pin23) - IN mode
 ##      DO  (pin6)    -> MISO-GPIO9  (pin21) - IN mode
@@ -71,17 +71,17 @@ class SpiSlave(object):
     def __init__(self):
         self.unknownState = True
         self.state = SlaveState.IDLE
-        
+
         self.receiveBuffer = 0
         self.edgeCunter = 0
         self.sendBuffer = 0
         self.counter = 0
-        
+
         self.pinSCK = 0
         self.pinDI = 0
 
 
-    ## called on fallind edge of last bit
+    ## called on falling edge of last bit
     def receivedByte(self):
         ## received full byte
 
@@ -94,12 +94,12 @@ class SpiSlave(object):
                 print("echo command -- sending echo request: {0:#010b}".format(self.sendBuffer))
                 self.state = SlaveState.SENDING_VALUE
                 self.slaveSelected()
-        
+
         elif self.state == SlaveState.SENDING_VALUE:
             ## sending done -- received trash
             print("sending completed -- receiving echo")
             self.state = SlaveState.RECEIVING_ECHO
-            
+
         elif self.state == SlaveState.RECEIVING_ECHO:
             ## echo received
             print("echo received: {0:#010b}".format(self.receiveBuffer))
@@ -110,9 +110,9 @@ class SpiSlave(object):
     def sendBit(self):
         if self.state != SlaveState.SENDING_VALUE:
             return
-            
+
         ##print "sending: ", self.edgeCunter, self.sendBuffer
-            
+
         ## sending bit
         self.sendBuffer = (self.sendBuffer << 1)
         bit = 0;
@@ -127,15 +127,15 @@ class SpiSlave(object):
         ##print "received edge: {} pin: {} {:#010b}".format(self.edgeCunter, self.pinDI, self.receiveBuffer)
 
 
-    ## Define a threaded callback function to run in another thread when events are detected  
+    ## Define a threaded callback function to run in another thread when events are detected
     def clock_tick(self, channel):
         ## Needed to modify global copy of globvar
         global exceptionQueue
-        
+
         try:
             self.pinSCK = GPIO.input(PIN_SCK)
             if self.unknownState:
-                self.handleUnknownState()                    
+                self.handleUnknownState()
                 return
 
             if self.pinSCK == 0:
@@ -154,14 +154,14 @@ class SpiSlave(object):
 
         except:
             exceptionQueue.put(sys.exc_info())
-    
+
 
     def handleUnknownState(self):
         if self.pinSCK == 1:
             ## rising edge -- read
             self.receiveBit()
             return
-        
+
         ## falling edge -- check state
         ### searching start sequence
         if self.receiveBuffer == 0b10101010:
@@ -176,11 +176,11 @@ class SpiSlave(object):
 
     def slaveSelected(self):
         self.sendBit()
-        
+
     def slave_tick(self, channel):
         ## Needed to modify global copy of globvar
         global exceptionQueue
-        
+
         try:
             pinSS = GPIO.input(PIN_SS)
             if pinSS == 1:
@@ -204,13 +204,13 @@ GPIO.setup(PIN_SS, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)	    ## set inner pull-do
 
 try:
     spi = SpiSlave()
-    
-    ## when a changing edge is detected on given port, regardless of whatever   
-    ## else is happening in the program, the function my_callback will be run  
+
+    ## when a changing edge is detected on given port, regardless of whatever
+    ## else is happening in the program, the function my_callback will be run
     GPIO.add_event_detect(PIN_SCK, GPIO.BOTH, callback=spi.clock_tick)
     GPIO.add_event_detect(PIN_SS, GPIO.BOTH, callback=spi.slave_tick)
-    
-    
+
+
     while True:
         ## handle callback exceptions
         try:
@@ -226,8 +226,8 @@ try:
             traceback.print_tb(exc_trace)
             print("{}: {}".format(exc_type.__name__, exc_obj ))
             exit(1)
-            
-        
+
+
 except KeyboardInterrupt:
     ## do nothing
     pass
